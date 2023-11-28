@@ -6,6 +6,11 @@ export async function GET() {
   return NextResponse.json(tasks);
 }
 
-export function POST() {
-  return NextResponse.json({ message: 'Creando Tareas' });
+export async function POST(request) {
+  const { title, description } = await request.json();
+  const newTask = await prisma.task.create({ data: { title, description } });
+  return NextResponse.json({
+    message: 'Tarea creada exitosamente',
+    task: newTask,
+  });
 }
