@@ -1,5 +1,6 @@
 'use client';
 
+import { revalidatePath } from 'next/cache';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -12,14 +13,12 @@ const NewPage = () => {
 
   useEffect(() => {
     if (id) {
-      setLoading(true);
       fetch(`/api/tasks/${id}`)
         .then((res) => res.json())
         .then((data) => {
           setTitle(data.title);
           setDescription(data.description);
         });
-      setLoading(false);
     }
   }, [id]);
 
@@ -36,6 +35,7 @@ const NewPage = () => {
           description,
         }),
       });
+
       return router.push('/');
     }
 
