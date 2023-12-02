@@ -1,23 +1,55 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const NewPage = () => {
   const router = useRouter();
+  const { id } = useParams();
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      fetch(`/api/tasks/${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setTitle(data.title);
+          setDescription(data.description);
+        });
+      setLoading(false);
+    }
+  }, [id]);
 
   const onSubmit = async (event) => {
     event.preventDefault();
-    const title = event.target.title.value;
-    const description = event.target.description.value;
-    const response = await fetch('/api/tasks', {
-      method: 'POST',
+    if (!id) {
+      await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description,
+        }),
+      });
+      return router.push('/');
+    }
+
+    await fetch(`/api/tasks/${id}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ title, description }),
+      body: JSON.stringify({
+        title,
+        description,
+      }),
     });
-    const data = await response.json();
-    console.log(data);
+
     router.push('/');
   };
 
@@ -32,6 +64,8 @@ const NewPage = () => {
           id='title'
           className='border border-gray-400 p-2 mb-4 w-full text-black'
           placeholder='Titulo'
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
         />
         <label htmlFor='description' className='font-bold text-sm'>
           Descripción de la tarea
@@ -42,7 +76,9 @@ const NewPage = () => {
           cols='30'
           rows='3'
           className='border border-gray-400 p-2 mb-4 w-full text-black'
-          placeholder='Describe tu tarea'></textarea>
+          placeholder='Describe tu tarea'
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}></textarea>
         <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
           Crear
         </button>
